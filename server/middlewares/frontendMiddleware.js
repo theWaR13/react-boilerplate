@@ -1,8 +1,12 @@
 /* eslint-disable global-require */
 const express = require('express');
+const proxy = require('express-http-proxy');
 const path = require('path');
 const compression = require('compression');
 const pkg = require(path.resolve(process.cwd(), 'package.json'));
+
+const pxhost = process.env.npm_config_pxhost || '127.0.0.1';
+const pxport = process.env.npm_config_pxport || '3000';
 
 // Dev middleware
 const addDevMiddlewares = (app, webpackConfig) => {
@@ -19,6 +23,9 @@ const addDevMiddlewares = (app, webpackConfig) => {
 
   app.use(middleware);
   app.use(webpackHotMiddleware(compiler));
+
+  // Proxy requests
+  app.use('/api', proxy(`${pxhost}:${pxport}/`));
 
   // Since webpackDevMiddleware uses memory-fs internally to store build
   // artifacts, we use it instead
